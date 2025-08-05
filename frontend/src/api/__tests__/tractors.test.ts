@@ -32,11 +32,12 @@ describe("tractorsApi.getTractors", () => {
     const mockResponse = {
       ok: false,
       status: 418,
+      statusText: "oh no",
     };
 
     const mockFetch = vi.fn().mockResolvedValue(mockResponse);
     vi.stubGlobal("fetch", mockFetch);
 
-    await expect(tractorsApi.getTractors()).rejects.toThrow("HTTP error! status: 418");
+    await expect(tractorsApi.getTractors()).rejects.toThrow("418 oh no");
   });
 });

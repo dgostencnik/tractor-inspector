@@ -77,7 +77,7 @@ function handleCellSelect(field: string, data: Record<string, any>) {
   const telemetryItem = data as TractorTelemetryItem;
 
   if (field === "date_time") {
-    router.push(`/tractors/${route.params.id}/sessions/${telemetryItem.id}`);
+    router.push(`/tractors/${route.params.id}/telemetry/${telemetryItem.id}`);
   }
 }
 
