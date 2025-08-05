@@ -3,4 +3,5 @@ export interface Tractor {
   totalWorkingHours: number
   lastActive: string
   imageUrl?: string
+  location?: string
 }

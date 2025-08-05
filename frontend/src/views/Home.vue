@@ -1,46 +1,26 @@
 <script setup lang="ts">
+import type { Tractor } from '../types'
 import { Icon } from '@iconify/vue'
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import AppHeader from '.././components/app-header.vue'
+import { tractorsApi } from '../api/tractors'
 import TractorCard from '../components/tractor-card.vue'
+import { useFetch } from '../composables/use-fetch'
 
-const loading = ref(false)
 const filterQuery = ref('')
 
-const mockTractors = [
-  {
-    serialNumber: 'A2302895',
-    totalWorkingHours: 1245,
-    imageUrl: '/images/A2302895.jpg',
-    status: 'Active',
-    lastActive: 'Mar 14, 2026 6:44:12 AM',
-    location: 'Field A-12',
-  },
-  {
-    serialNumber: 'A2302900',
-    totalWorkingHours: 987,
-    imageUrl: '/images/A2302900.jpg',
-    status: 'Maintenance',
-    lastActive: '2024-07-30T16:45:00Z',
-    location: 'Workshop',
-  },
-  {
-    serialNumber: 'A6002059',
-    totalWorkingHours: 2156,
-    imageUrl: '/images/A6002059.jpg',
-    status: 'Active',
-    lastActive: '2024-08-01T09:15:00Z',
-    location: 'Field B-7',
-  },
+const { loading, data, refetchData } = useFetch<Tractor[]>(tractorsApi.getTractors)
 
-]
-
-const filteredTractors = computed(() => mockTractors.filter((t) => {
+const filteredTractors = computed(() => (data.value ?? []).filter((t) => {
   const query = filterQuery.value.toLocaleLowerCase()
   return t.serialNumber.toLowerCase().includes(query)
-    || t.location.toLowerCase().includes(query)
+    || t.location?.toLowerCase().includes(query)
     || t.lastActive.toLowerCase().includes(query)
 }))
+
+onMounted(() => {
+  refetchData()
+})
 </script>
 
 <template>
@@ -86,12 +66,13 @@ const filteredTractors = computed(() => mockTractors.filter((t) => {
       </div>
     </div>
 
-    <div class="card bg-base-100 shadow mb-8">
+    <div class="card bg-base-100 shadow mb-8 w-full">
       <div class="card-body">
         <label class="input flex items-center w-full">
           <Icon icon="tabler:search" class="size-6 mr-2" />
           <input
             v-model="filterQuery"
+            :disabled="loading"
             type="search"
             class="grow w-full"
             placeholder="Filter by serial number..."
@@ -101,7 +82,7 @@ const filteredTractors = computed(() => mockTractors.filter((t) => {
     </div>
 
     <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div v-for="n in 8" :key="n" class="card bg-base-100 shadow">
+      <div v-for="n in 8" :key="n" class="card bg-base-100 shadow w-72">
         <div class="skeleton h-48 w-full" />
         <div class="card-body">
           <div class="skeleton h-4 w-full" />
@@ -112,7 +93,7 @@ const filteredTractors = computed(() => mockTractors.filter((t) => {
     </div>
 
     <TransitionGroup
-      v-else
+      v-if="!loading"
       name="list"
       tag="div"
       class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
