@@ -1,6 +1,7 @@
 import { query } from "../db.js";
-import { addImageUrl } from "../lib/utils.js";
-import { VALID_SORT_COLUMNS } from "../lib/const.js";
+import { VALID_SORT_COLUMNS, UPDATABLE_COLUMNS } from "../lib/const.js";
+import { addImageUrl, sendZodError } from "../lib/utils.js";
+import { EditTelemetryLogItemSchema } from "../schemas/telemetry-log-item.js";
 const getTractors = async (req, res) => {
   try {
     const result = await query(
@@ -44,7 +45,6 @@ const getTractor = async (req, res) => {
     res.status(500).json({ error: "Failed to retrieve data" });
   }
 };
-
 
 const getTractorTelemetry = async (req, res) => {
   try {
@@ -123,9 +123,94 @@ const getTractorTelemetryLog = async (req, res) => {
     res.status(500).json({ error: "Failed to retrieve data" });
   }
 };
+
+const updateTractorTelemetryLog = async (req, res) => {
+  try {
+    const { serialNumber, logId } = req.params;
+    const parsedLogId = parseInt(logId);
+
+    if (isNaN(parsedLogId)) {
+      return res.status(400).json({ error: "Invalid log ID" });
+    }
+
+    const existingTelemetryLog = await query(
+      `
+      SELECT id
+      FROM vehicle_sessions  
+      WHERE id = $1 AND serial_number = $2
+    `,
+      [parsedLogId, serialNumber]
+    );
+
+    if (existingTelemetryLog.rows.length === 0) {
+      return res.status(404).json({ error: "Telemetry log not found" });
+    }
+
+    // Get the request body and filter out undefined/null values
+    const updateData = req.body;
+    if (!updateData || Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: "No data provided for update" });
+    }
+
+    //validate data
+
+    const validationResult = EditTelemetryLogItemSchema.safeParse(updateData);
+
+    let validData;
+    if (!validationResult.success) {
+      return sendZodError(res, validationResult.error);
+    } else {
+      validData = validationResult.data;
+    }
+
+    // Build dynamic UPDATE query
+    const updateFields = [];
+    const updateValues = [parsedLogId, serialNumber];
+    let paramIndex = 3;
+
+    for (const [key, value] of Object.entries(validData)) {
+      if (
+        UPDATABLE_COLUMNS.includes(key) &&
+        value !== undefined &&
+        value !== null
+      ) {
+        updateFields.push(`${key} = $${paramIndex}`);
+        updateValues.push(value);
+        paramIndex++;
+      }
+    }
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({
+        error: "No valid fields provided for update",
+      });
+    }
+
+    // Execute the update
+    const updateQuery = `
+      UPDATE vehicle_sessions 
+      SET ${updateFields.join(", ")}
+      WHERE id = $1 AND serial_number = $2
+      RETURNING *
+    `;
+
+    const result = await query(updateQuery, updateValues);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Failed to update telemetry log" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error updating telemetry log:", error);
+    res.status(500).json({ error: "Failed to update telemetry log" });
+  }
+};
+
 export const tractorController = {
   getTractor,
   getTractors,
   getTractorTelemetry,
-  getTractorTelemetryLog
+  getTractorTelemetryLog,
+  updateTractorTelemetryLog,
 };

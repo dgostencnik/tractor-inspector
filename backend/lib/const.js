@@ -19,3 +19,23 @@ export const VALID_SORT_COLUMNS = [
   "all_wheel_drive_status",
   "actual_status_of_creeper"
 ];
+
+ export const UPDATABLE_COLUMNS = [
+      "gps_longitude",
+      "gps_latitude", 
+      "total_working_hours_counter",
+      "engine_speed",
+      "engine_load",
+      "fuel_consumption",
+      "ground_speed_gearbox",
+      "ground_speed_radar",
+      "coolant_temperature",
+      "speed_front_pto",
+      "speed_rear_pto",
+      "current_gear_shift",
+      "ambient_temperature",
+      "parking_brake_status",
+      "transverse_differential_lock_status",
+      "all_wheel_drive_status",
+      "actual_status_of_creeper"
+    ];

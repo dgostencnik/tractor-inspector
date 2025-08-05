@@ -22,3 +22,8 @@ tractorRoutes.get(
   tractorController.getTractorTelemetryLog
 );
 
+// PUT /tractors/:serialNumber/telemetry/:logId
+tractorRoutes.put(
+  "/:serialNumber/telemetry/:logId",
+  tractorController.updateTractorTelemetryLog
+);
