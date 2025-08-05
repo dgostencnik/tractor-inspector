@@ -10,8 +10,8 @@ const props = defineProps<{
 <template>
   <div class="navbar bg-base-100 shadow-sm border-b">
     <div class="navbar-start">
-      <RouterLink v-if="backTo" :to="backTo" class="btn btn-ghost btn-circle mr-2">
-        <Icon icon="tabler:arrow-left" />
+      <RouterLink v-if="backTo" :to="backTo" class="btn btn-ghost btn-circle mr-2 ">
+        <Icon icon="tabler:arrow-left" class="text-2xl" />
       </RouterLink>
 
       <div class="flex items-center space-x-3">
