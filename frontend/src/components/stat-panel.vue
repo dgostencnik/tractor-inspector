@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import StatBox from './stat-box.vue'
+import StatBox from "./stat-box.vue";
 
 defineProps<{
   stats: {
-    className: string
-    value: string
-    title: string
-    icon?: string
-  }[]
-}>()
+    className: string;
+    value: string;
+    title: string;
+    icon?: string;
+  }[];
+}>();
 </script>
 
 <template>
@@ -19,7 +19,8 @@ defineProps<{
         :class="`md:grid-cols-${stats.length}`"
       >
         <StatBox
-          v-for="stat in stats" :key="stat.title"
+          v-for="stat in stats"
+          :key="stat.title"
           :icon="stat.icon"
           :title="stat.title"
           :value="stat.value"

@@ -1,18 +1,22 @@
 <script setup lang="ts">
-import { Icon } from '@iconify/vue'
+import { Icon } from "@iconify/vue";
 
 defineProps<{
-  icon?: string
-  title: string
-  value: string
-  className: string
-}>()
+  icon?: string;
+  title: string;
+  value: string;
+  className: string;
+}>();
 </script>
 
 <template>
   <div class="stat">
     <div class="stat-figure" :class="className">
-      <Icon v-if="icon" :icon="icon" class="text-2xl" />
+      <Icon
+        v-if="icon"
+        :icon="icon"
+        class="text-2xl"
+      />
     </div>
     <div class="stat-title text-lg">
       {{ title }}

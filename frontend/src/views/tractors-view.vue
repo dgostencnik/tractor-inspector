@@ -1,32 +1,33 @@
 <script setup lang="ts">
-import type { Tractor } from '../types'
-import { Icon } from '@iconify/vue'
-import { computed, onMounted, ref } from 'vue'
-import AppHeader from '.././components/app-header.vue'
-import { tractorsApi } from '../api/tractors'
-import DisplayMessage from '../components/display-message.vue'
-import StatPanel from '../components/stat-panel.vue'
-import TractorCard from '../components/tractor-card.vue'
+import { Icon } from "@iconify/vue";
+import { computed, onMounted, ref } from "vue";
 
-import { useFetch } from '../composables/use-fetch'
+import type { Tractor } from "../types";
 
-const filterQuery = ref('')
+import AppHeader from ".././components/app-header.vue";
+import { tractorsApi } from "../api/tractors";
+import DisplayMessage from "../components/display-message.vue";
+import StatPanel from "../components/stat-panel.vue";
+import TractorCard from "../components/tractor-card.vue";
+import { useFetch } from "../composables/use-fetch";
 
-const { loading, data, refetchData } = useFetch<Tractor[], []>(tractorsApi.getTractors)
+const filterQuery = ref("");
+
+const { loading, data, refetchData } = useFetch<Tractor[], []>(tractorsApi.getTractors);
 
 const filteredTractors = computed(() => (data.value ?? []).filter((t) => {
-  const query = filterQuery.value.toLocaleLowerCase()
+  const query = filterQuery.value.toLocaleLowerCase();
   return t.serialNumber.toLowerCase().includes(query)
     || t.location?.toLowerCase().includes(query)
-    || t.lastActive.toLowerCase().includes(query)
-}))
+    || t.lastActive.toLowerCase().includes(query);
+}));
 
 const tractorStats = computed(() =>
-  [{ title: 'Total Tractors', value: String(filteredTractors.value.length), className: 'text-info' }, { title: 'Active Today', value: '0', className: 'text-error' }])
+  [{ title: "Total Tractors", value: String(filteredTractors.value.length), className: "text-info" }, { title: "Active Today", value: "0", className: "text-error" }]);
 
 onMounted(() => {
-  refetchData()
-})
+  refetchData();
+});
 </script>
 
 <template>
@@ -69,7 +70,11 @@ onMounted(() => {
     </div>
 
     <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div v-for="n in 8" :key="n" class="card bg-base-100 shadow w-72">
+      <div
+        v-for="n in 8"
+        :key="n"
+        class="card bg-base-100 shadow w-72"
+      >
         <div class="skeleton h-48 w-full" />
         <div class="card-body">
           <div class="skeleton h-4 w-full" />
@@ -114,13 +119,13 @@ onMounted(() => {
 
 <style scoped>
   .list-enter-active,
-  .list-leave-active {
-    transition: all 0.5s ease;
-  }
+.list-leave-active {
+  transition: all 0.5s ease;
+}
 
-  .list-enter-from,
-  .list-leave-to {
-    opacity: 0;
-    transform: translateX(30px);
-  }
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateX(30px);
+}
 </style>

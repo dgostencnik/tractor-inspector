@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import type { Tractor } from '../types'
-import { Icon } from '@iconify/vue'
+import { Icon } from "@iconify/vue";
+import { computed } from "vue";
 
-import { computed } from 'vue'
-import { defaultTractorImageUrl } from '../utils/const'
-import { formatLastActive } from '../utils/formatters'
+import type { Tractor } from "../types";
 
-const props = defineProps<{ tractor: Tractor }>()
+import { defaultTractorImageUrl } from "../utils/const";
+import { formatLastActive } from "../utils/formatters";
+
+const props = defineProps<{ tractor: Tractor }>();
 
 const imageUrl = computed(() =>
   props.tractor.imageUrl ? props.tractor.imageUrl : defaultTractorImageUrl,
-)
+);
 </script>
 
 <template>
@@ -70,11 +71,11 @@ const imageUrl = computed(() =>
 
 <style>
   .tractor-card {
-    transition: all 0.3s ease;
-  }
+  transition: all 0.3s ease;
+}
 
-  .tractor-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-  }
+.tractor-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
 </style>

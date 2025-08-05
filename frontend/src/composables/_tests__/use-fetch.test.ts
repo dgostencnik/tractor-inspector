@@ -1,41 +1,42 @@
-import { describe, expect, it, vi } from 'vitest'
-import { useFetch } from '../use-fetch'
+import { describe, expect, it, vi } from "vitest";
 
-describe('useFetch composable', () => {
-  const fetchingFunction = vi.fn((name: string) => Promise.resolve({ id: 1, name }))
-  const errorFetchingFunction = vi.fn(() => Promise.reject(new Error('Oh no')))
+import { useFetch } from "../use-fetch";
 
-  it('sets correct initial state', () => {
-    const { loading, error, refetchData, data } = useFetch(fetchingFunction)
-    expect(data.value).toBeUndefined()
-    expect(loading.value).toBe(false)
-    expect(error.value).toBeNull()
-    expect(refetchData).toBeDefined()
-  })
+describe("useFetch composable", () => {
+  const fetchingFunction = vi.fn((name: string) => Promise.resolve({ id: 1, name }));
+  const errorFetchingFunction = vi.fn(() => Promise.reject(new Error("Oh no")));
 
-  it('fetches data', async () => {
-    const { loading, error, refetchData, data } = useFetch(fetchingFunction)
+  it("sets correct initial state", () => {
+    const { loading, error, refetchData, data } = useFetch(fetchingFunction);
+    expect(data.value).toBeUndefined();
+    expect(loading.value).toBe(false);
+    expect(error.value).toBeNull();
+    expect(refetchData).toBeDefined();
+  });
 
-    const promise = refetchData('testName')
-    expect(loading.value).toBe(true)
-    expect(data.value).toBeUndefined()
+  it("fetches data", async () => {
+    const { loading, error, refetchData, data } = useFetch(fetchingFunction);
 
-    await promise
+    const promise = refetchData("testName");
+    expect(loading.value).toBe(true);
+    expect(data.value).toBeUndefined();
 
-    expect(fetchingFunction).toHaveBeenCalledWith('testName')
-    expect(data.value).toEqual({ id: 1, name: 'testName' })
-    expect(loading.value).toBe(false)
-    expect(error.value).toBeNull()
-  })
+    await promise;
 
-  it('handle errors', async () => {
-    const { data, loading, error, refetchData } = useFetch(errorFetchingFunction)
-    expect(error.value).toBeNull()
+    expect(fetchingFunction).toHaveBeenCalledWith("testName");
+    expect(data.value).toEqual({ id: 1, name: "testName" });
+    expect(loading.value).toBe(false);
+    expect(error.value).toBeNull();
+  });
 
-    await expect(refetchData()).rejects.toThrow('Oh no')
+  it("handle errors", async () => {
+    const { data, loading, error, refetchData } = useFetch(errorFetchingFunction);
+    expect(error.value).toBeNull();
 
-    expect(data.value).toBeUndefined()
-    expect(loading.value).toBe(false)
-    expect(error.value).toBe('Oh no')
-  })
-})
+    await expect(refetchData()).rejects.toThrow("Oh no");
+
+    expect(data.value).toBeUndefined();
+    expect(loading.value).toBe(false);
+    expect(error.value).toBe("Oh no");
+  });
+});
