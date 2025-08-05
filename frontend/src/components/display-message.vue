@@ -14,6 +14,7 @@ defineProps<{
       <div class="flex flex-col justify-center items-center py-12">
         <Icon
           v-if="icon"
+          :data-testid="icon"
           :icon="icon"
           class="text-6xl text-gray-300 mb-4"
         />

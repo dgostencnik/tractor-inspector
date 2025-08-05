@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatLastActive } from "../formatters";
+import { formatISO8601Date, formatLastActive } from "../formatters";
 
 describe("formatLastActive", () => {
   it("returns N/A when dateString is undefined", () => {
@@ -33,5 +33,36 @@ describe("formatLastActive", () => {
   it("returns  number of days ago\" when dateString is more than 24 hours ago", () => {
     const oldDate = new Date(Date.now() - 1000 * 60 * 60 * 24 * 2); // 2 days ago
     expect(formatLastActive(oldDate.toISOString())).toBe("2d ago");
+  });
+});
+
+describe("formatISO8601Date", () => {
+  it("should format a valid date string", () => {
+    const date1 = new Date("2025-08-14T10:19:00Z");
+    const expectedOutput = "Aug 14, 2025, 10:19:00 AM";
+    expect(formatISO8601Date(date1.toISOString())).toBe(expectedOutput);
+  });
+
+  it("should return Invalid date format for valid non ISO date string", () => {
+    const dateString = "Mar 14, 2020 6:42:32 AM";
+    expect(formatISO8601Date(dateString)).toBe("Invalid date");
+  });
+
+  it("should return Invalid date for an invalid date string", () => {
+    const dateString = "qwerty ";
+    expect(formatISO8601Date(dateString)).toBe("Invalid date");
+  });
+
+  it("should return Invalid date for a numeric input", () => {
+    const input = 123;
+    expect(formatISO8601Date(input)).toBe("Invalid date");
+  });
+
+  it("should return Invalid date for undefined ", () => {
+    expect(formatISO8601Date(undefined)).toBe("Invalid date");
+  });
+
+  it("should return Invalid date for a null input", () => {
+    expect(formatISO8601Date(null)).toBe("Invalid date");
   });
 });

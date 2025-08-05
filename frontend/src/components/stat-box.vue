@@ -16,6 +16,7 @@ defineProps<{
         v-if="icon"
         :icon="icon"
         class="text-2xl"
+        :data-testid="icon"
       />
     </div>
     <div class="stat-title text-lg">

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { TRACTOR_API_ENDPOINT, tractorsApi } from "../tractors";
+import { TRACTOR_API_ENDPOINT } from "../../utils/const";
+import { tractorsApi } from "../tractors";
 
 describe("tractorsApi.getTractors", () => {
   afterEach(() => {
