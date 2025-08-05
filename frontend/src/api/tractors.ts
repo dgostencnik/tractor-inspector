@@ -1,10 +1,19 @@
-import type { PaginatedResult, PaginationParams, Tractor, TractorTelemetryItem } from "../types";
+import type {
+  PaginatedResult,
+  PaginationParams,
+  Tractor,
+  TractorTelemetryItem,
+} from "../types";
 
-import { TRACTOR_API_ENDPOINT } from "../utils/const";
+import env from "../utils/env";
+
+const TRACTOR_API_ENDPOINT = env.VITE_TRACTOR_API_URL;
 
 function checkResponse(response: Response) {
   if (!response.ok) {
-    throw new Error(`${response.status} ${response.statusText ?? "Internal server error"}`);
+    throw new Error(
+      `${response.status} ${response.statusText ?? "Internal server error"}`,
+    );
   }
 }
 
@@ -13,20 +22,25 @@ async function getTractors() {
 
   checkResponse(response);
 
-  const data = await response.json() as Tractor[];
+  const data = (await response.json()) as Tractor[];
   return data;
 }
 
 async function getTractor(serialNumber: string) {
-  const response = await fetch(`${TRACTOR_API_ENDPOINT}/tractors/${serialNumber}`);
+  const response = await fetch(
+    `${TRACTOR_API_ENDPOINT}/tractors/${serialNumber}`,
+  );
 
   checkResponse(response);
 
-  const data = await response.json() as Tractor;
+  const data = (await response.json()) as Tractor;
   return data;
 }
 
-async function getTractorTelemetry(serialNumber: string, { pageSize, page, sort, order }: PaginationParams) {
+async function getTractorTelemetry(
+  serialNumber: string,
+  { pageSize, page, sort, order }: PaginationParams,
+) {
   const queryParams = new URLSearchParams();
 
   if (pageSize !== undefined) {
@@ -49,44 +63,57 @@ async function getTractorTelemetry(serialNumber: string, { pageSize, page, sort,
 
   checkResponse(response);
 
-  const data = await response.json() as PaginatedResult<TractorTelemetryItem[]>;
+  const data = (await response.json()) as PaginatedResult<
+    TractorTelemetryItem[]
+  >;
 
   return data;
 }
 
 async function getTractorTelemetryItem(serialNumber: string, logId: number) {
-  const response = await fetch(`${TRACTOR_API_ENDPOINT}/tractors/${serialNumber}/telemetry/${logId}`);
+  const response = await fetch(
+    `${TRACTOR_API_ENDPOINT}/tractors/${serialNumber}/telemetry/${logId}`,
+  );
 
   checkResponse(response);
 
-  const data = await response.json() as TractorTelemetryItem;
+  const data = (await response.json()) as TractorTelemetryItem;
 
   return data;
 }
 
-async function updateTractorTelemetryItem(serialNumber: string, logId: number, editformData: unknown) {
-  const response = await fetch(`${TRACTOR_API_ENDPOINT}/tractors/${serialNumber}/telemetry/${logId}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
+async function updateTractorTelemetryItem(
+  serialNumber: string,
+  logId: number,
+  editformData: unknown,
+) {
+  const response = await fetch(
+    `${TRACTOR_API_ENDPOINT}/tractors/${serialNumber}/telemetry/${logId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(editformData),
     },
-    body: JSON.stringify(editformData),
-  });
+  );
 
   if (!response.ok) {
     const errorMessages = await response.json();
 
     if (response.status === 422) {
-      throw new Error(JSON.stringify({
-        message: JSON.stringify(errorMessages),
-        code: "VALIDATION_ERROR",
-      }));
+      throw new Error(
+        JSON.stringify({
+          message: JSON.stringify(errorMessages),
+          code: "VALIDATION_ERROR",
+        }),
+      );
     }
   }
 
   checkResponse(response);
 
-  const data = await response.json() as TractorTelemetryItem;
+  const data = (await response.json()) as TractorTelemetryItem;
 
   return data;
 }

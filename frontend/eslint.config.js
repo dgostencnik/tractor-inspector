@@ -32,7 +32,19 @@ export default antfu({
     }],
     "unicorn/filename-case": ["error", {
       case: "kebabCase",
-      ignore: ["Readme.md", "README.md"],
+      ignore: ["Readme.md"],
     }],
+  },
+
+}, {
+  files: [
+    "**/*.test.ts",
+    "**/*.test.js",
+    "**/*.spec.ts",
+    "**/*.spec.js",
+    "**/__tests__/**",
+  ],
+  rules: {
+    "perfectionist/sort-imports": "off",
   },
 });

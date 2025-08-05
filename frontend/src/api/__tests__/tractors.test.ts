@@ -1,6 +1,13 @@
+/* eslint-disable import/first */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { TRACTOR_API_ENDPOINT } from "../../utils/const";
+vi.mock("../../utils/env", () => ({
+  default: {
+    VITE_TRACTOR_API_URL: "VITE_TRACTOR_API_URL",
+  },
+}));
+
+import env from "../../utils/env";
 import { tractorsApi } from "../tractors";
 
 describe("tractorsApi.getTractors", () => {
@@ -10,8 +17,8 @@ describe("tractorsApi.getTractors", () => {
 
   it("returns list of tractors on success", async () => {
     const mockTractors = [
-      { id: 1, name: "Big Red" },
-      { id: 2, name: "Green Beast" },
+      { id: 1, name: "T1" },
+      { id: 2, name: "T2" },
     ];
 
     const mockResponse = {
@@ -24,7 +31,7 @@ describe("tractorsApi.getTractors", () => {
 
     const result = await tractorsApi.getTractors();
 
-    expect(fetch).toHaveBeenCalledWith(`${TRACTOR_API_ENDPOINT}/tractors`);
+    expect(fetch).toHaveBeenCalledWith(`${env.VITE_TRACTOR_API_URL}/tractors`);
     expect(result).toEqual(mockTractors);
   });
 
