@@ -1,15 +1,8 @@
+<script setup lang="ts">
+</script>
+
 <template>
-  <h1>Hello App!</h1>
-  <p><strong>Current route path:</strong> {{ $route.fullPath }}</p>
-  <nav>
-    <RouterLink to="/">
-      Go to Home
-    </RouterLink>
-    <RouterLink to="/about">
-      Go to About
-    </RouterLink>
-  </nav>
-  <main>
-    <RouterView />
-  </main>
+  <div class="min-h-screen flex flex-col">
+    <RouterView class="flex-1 flex flex-col" />
+  </div>
 </template>
