@@ -1,5 +1,6 @@
 import { query } from "../db.js";
 import { addImageUrl } from "../lib/utils.js";
+import { VALID_SORT_COLUMNS } from "../lib/const.js";
 const getTractors = async (req, res) => {
   try {
     const result = await query(
@@ -44,7 +45,57 @@ const getTractor = async (req, res) => {
   }
 };
 
+
+const getTractorTelemetry = async (req, res) => {
+  try {
+    const { serialNumber } = req.params;
+
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const pageSize = Math.min(
+      1000,
+      Math.max(1, parseInt(req.query.pageSize) || 50)
+    );
+    const sort = req.query.sort || "date_time";
+    const order = req.query.order?.toUpperCase() === "DESC" ? "DESC" : "ASC";
+
+    if (!VALID_SORT_COLUMNS.includes(sort)) {
+      return res.status(400).json({ error: "Invalid sort column" });
+    }
+
+    const offset = (page - 1) * pageSize;
+
+    const result = await query(
+      `
+      SELECT *
+      FROM vehicle_sessions
+      WHERE serial_number = $1
+      ORDER BY ${sort} ${order}
+      LIMIT $2 OFFSET $3
+      `,
+      [serialNumber, pageSize, offset]
+    );
+
+    const countResult = await query(
+      "SELECT COUNT(*) FROM vehicle_sessions WHERE serial_number = $1",
+      [serialNumber]
+    );
+
+    const total = parseInt(countResult.rows[0].count);
+
+    res.json({
+      page,
+      pageSize,
+      total,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: "Failed to retrieve data" });
+  }
+};
+
 export const tractorController = {
   getTractor,
   getTractors,
+  getTractorTelemetry
 };
