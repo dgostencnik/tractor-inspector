@@ -1,15 +1,15 @@
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { Icon } from "@iconify/vue";
 
-import type { SORT_ORDER } from "../types";
+import type { SortOrder } from "../types";
 
-import { SORT_ORDERS } from "../types";
+import { SortOrders } from "../types";
 import DisplayMessage from "./display-message.vue";
 
 defineProps<{
   columns: any [];
   sort: string;
-  order: SORT_ORDER;
+  order: SortOrder;
   loading: boolean;
   error: string | null;
   pageSize: number;
@@ -54,12 +54,12 @@ function onCellSelect(key: string, row: T) {
                       <Icon
                         icon="tabler:caret-up"
                         class=" text-xs"
-                        :class="{ 'text-primary': sort === column.key && order === SORT_ORDERS.ASC, 'text-base-content/30': !(sort === column.key && SORT_ORDERS.ASC) }"
+                        :class="{ 'text-primary': sort === column.key && order === SortOrders.asc, 'text-base-content/30': !(sort === column.key && order === SortOrders.asc) }"
                       />
                       <Icon
                         icon="tabler:caret-down"
                         class=" text-xs"
-                        :class="{ 'text-primary': sort === column.key && SORT_ORDERS.DESC, 'text-base-content/30': !(sort === column.key && SORT_ORDERS.DESC) }"
+                        :class="{ 'text-primary': sort === column.key && order === SortOrders.desc, 'text-base-content/30': !(sort === column.key && order === SortOrders.desc) }"
                       />
                     </div>
                   </div>

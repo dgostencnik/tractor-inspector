@@ -40,7 +40,7 @@ onMounted(async () => {
 });
 
 async function submit(v: EditTelemetryLogItem) {
-  console.log(v);
+  await tractorsApi.updateTractorTelemetryItem(String(route.params.id), Number.parseInt(String(route.params.itemId)), v);
 }
 </script>
 

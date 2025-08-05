@@ -1,9 +1,9 @@
-export const SORT_ORDERS = {
-  ASC: "ASC",
-  DESC: "DESC",
+export const SortOrders = {
+  asc: "asc",
+  desc: "desc",
 } as const;
 
-export type SORT_ORDER = typeof SORT_ORDERS[keyof typeof SORT_ORDERS];
+export type SortOrder = typeof SortOrders[keyof typeof SortOrders];
 
 export type PaginationParams = {
   pageSize?: number;

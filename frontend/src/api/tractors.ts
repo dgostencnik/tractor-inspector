@@ -23,7 +23,6 @@ async function getTractor(serialNumber: string) {
   checkResponse(response);
 
   const data = await response.json() as Tractor;
-
   return data;
 }
 
@@ -61,6 +60,34 @@ async function getTractorTelemetryItem(serialNumber: string, logId: number) {
   checkResponse(response);
 
   const data = await response.json() as TractorTelemetryItem;
+
+  return data;
+}
+
+async function updateTractorTelemetryItem(serialNumber: string, logId: number, editformData: unknown) {
+  const response = await fetch(`${TRACTOR_API_ENDPOINT}/tractors/${serialNumber}/telemetry/${logId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(editformData),
+  });
+
+  if (!response.ok) {
+    const errorMessages = await response.json();
+
+    if (response.status === 422) {
+      throw new Error(JSON.stringify({
+        message: JSON.stringify(errorMessages),
+        code: "VALIDATION_ERROR",
+      }));
+    }
+  }
+
+  checkResponse(response);
+
+  const data = await response.json() as TractorTelemetryItem;
+
   return data;
 }
 
@@ -69,4 +96,5 @@ export const tractorsApi = {
   getTractor,
   getTractorTelemetry,
   getTractorTelemetryItem,
+  updateTractorTelemetryItem,
 };

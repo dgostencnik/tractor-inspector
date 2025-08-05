@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import type { PaginatedResult, PaginationParams, Tractor, TractorTelemetryItem } from "../types";
+import type { PaginatedResult, PaginationParams, SortOrder, Tractor, TractorTelemetryItem } from "../types";
 
 import AppHeader from ".././components/app-header.vue";
 import { tractorsApi } from "../api/tractors";
@@ -11,8 +11,9 @@ import PaginationControls from "../components/pagination-controls.vue";
 import SimpleTable from "../components/simple-table.vue";
 import StatPanel from "../components/stat-panel.vue";
 import { useFetch } from "../composables/use-fetch";
-import { SORT_ORDERS } from "../types";
-import { tractorDefaultPagination, tractorSessionTableColumns } from "../utils/const";
+import { telemetryLogsTableColumns } from "../config/telemetry-logs-table";
+import { SortOrders } from "../types";
+import { tractorDefaultPagination } from "../utils/const";
 import { formatISO8601Date } from "../utils/formatters";
 
 const route = useRoute();
@@ -21,7 +22,7 @@ const router = useRouter();
 const pageSize = ref(Number(route.query.pageSize || tractorDefaultPagination.pageSize));
 const page = ref(Number(route.query.page || tractorDefaultPagination.page));
 const sort = ref(String(route.query.sort || tractorDefaultPagination.sort));
-const order = ref(String(route.query.order || tractorDefaultPagination.order));
+const order = ref<SortOrder>(String(route.query.order || tractorDefaultPagination.order) as SortOrder);
 
 const { loading, data, error, refetchData } = useFetch<Tractor, [string]>(tractorsApi.getTractor);
 const { data: telemetryData, refetchData: refetchTelemetryData, loading: telemetryDataLoading, error: telemetryDataError } = useFetch<PaginatedResult<TractorTelemetryItem[]>, [string, PaginationParams]>(tractorsApi.getTractorTelemetry);
@@ -53,11 +54,11 @@ watch(
 
 function handleUpdateSort(field: string) {
   if (sort.value === field) {
-    order.value = order.value === SORT_ORDERS.ASC ? SORT_ORDERS.DESC : SORT_ORDERS.ASC;
+    order.value = order.value === SortOrders.asc ? SortOrders.desc : SortOrders.asc;
   }
   else {
     sort.value = field;
-    order.value = SORT_ORDERS.ASC;
+    order.value = SortOrders.asc;
   }
   page.value = 1;
   updateUrl();
@@ -172,7 +173,7 @@ function updateUrl() {
       :order
       :page-size
       :page
-      :columns="tractorSessionTableColumns"
+      :columns="telemetryLogsTableColumns"
       :data="telemetryData?.data ?? []"
       :loading="telemetryDataLoading"
       :error="telemetryDataError"
