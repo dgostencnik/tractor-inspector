@@ -94,8 +94,38 @@ const getTractorTelemetry = async (req, res) => {
   }
 };
 
+const getTractorTelemetryLog = async (req, res) => {
+  try {
+    const { serialNumber, logId } = req.params;
+
+    const parsedLogId = parseInt(logId);
+
+    if (isNaN(parsedLogId)) {
+      return res.status(400).json({ error: "Invalid log ID" });
+    }
+
+    const result = await query(
+      `SELECT *
+       FROM vehicle_sessions  
+       where id=$1 and 
+       serial_number=$2
+       `,
+      [parsedLogId, serialNumber]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Telemetry log not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: "Failed to retrieve data" });
+  }
+};
 export const tractorController = {
   getTractor,
   getTractors,
-  getTractorTelemetry
+  getTractorTelemetry,
+  getTractorTelemetryLog
 };

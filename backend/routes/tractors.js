@@ -15,3 +15,10 @@ tractorRoutes.get(
   "/:serialNumber/telemetry",
   tractorController.getTractorTelemetry
 );
+
+// GET /tractors/:serialNumber/telemetry/:logId
+tractorRoutes.get(
+  "/:serialNumber/telemetry/:logId",
+  tractorController.getTractorTelemetryLog
+);
+
