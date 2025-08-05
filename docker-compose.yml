@@ -23,6 +23,7 @@ services:
       - tractor-db
     environment:
       DATABASE_URL: postgres://tractor:tractor@tractor-db:5432/tractor
+      ALLOWED_ORIGINS: http://localhost:5173
     volumes:
       - ./backend:/app
       - /app/node_modules
