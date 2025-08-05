@@ -61,7 +61,6 @@ async function getTractorTelemetryItem(serialNumber: string, logId: number) {
   checkResponse(response);
 
   const data = await response.json() as TractorTelemetryItem;
- 
   return data;
 }
 

@@ -2,12 +2,15 @@
 import { computed, onMounted } from "vue";
 import { useRoute } from "vue-router";
 
+import type { EditTelemetryLogItem } from "../schemas/telemetry-log-item";
 import type { TractorTelemetryItem } from "../types";
 
-import AppHeader from ".././components/app-header.vue";
 import { tractorsApi } from "../api/tractors";
+import AppHeader from "../components/app-header.vue";
 import DisplayMessage from "../components/display-message.vue";
+import TelemetryLogForm from "../components/telemetry-log-form.vue";
 import { useFetch } from "../composables/use-fetch";
+import { EditTelemetryLogItemSchema } from "../schemas/telemetry-log-item";
 import { formatISO8601Date } from "../utils/formatters";
 
 const route = useRoute();
@@ -35,6 +38,10 @@ onMounted(async () => {
     await refetchData(String(route.params.id), itemId);
   }
 });
+
+async function submit(v: EditTelemetryLogItem) {
+  console.log(v);
+}
 </script>
 
 <template>
@@ -75,5 +82,12 @@ onMounted(async () => {
         Back Home
       </RouterLink>
     </DisplayMessage>
+
+    <TelemetryLogForm
+      v-if="data"
+      :schema="EditTelemetryLogItemSchema"
+      :initial-values="data"
+      :on-submit="submit"
+    />
   </main>
 </template>
