@@ -21,8 +21,6 @@ import { getCenter, getColorForFeature } from "../utils/map";
 
 const route = useRoute();
 
-const activitiesTracksUrl = computed(() => String(route.params.date) ? `${env.VITE_TRACTOR_API_URL}/activities/${route.params.date}` : undefined);
-
 const activitiesStore = useActivitiesStore();
 const player = usePlayer({ step: 1000 * 20 });
 
@@ -32,6 +30,15 @@ const features = ref<{ serialNumber: string; color: string; coordinate: [number,
 
 const legendItems = computed(() => features.value.map(f => ({ id: f.serialNumber, title: f.serialNumber, color: f.color })));
 const mapCenter = ref(fromLonLat([20, 46]));
+
+const activitiesTracksUrl = computed(() => {
+  if (activitiesStore.selectedActivity) {
+    return `${env.VITE_TRACTOR_API_URL}/activities/${activitiesStore.selectedActivity.date}`;
+  }
+  return undefined;
+});
+
+const notFoundError = ref<string | null>(null);
 
 onMounted(() => {
   if (!activitiesStore.activities) {
@@ -47,7 +54,9 @@ onUnmounted(() => {
 });
 
 function resetPlayerAndMapFeatures() {
-  features.value = [];
+  if (features.value.length > 0) {
+    features.value = [];
+  }
   player.isEnabled.value = false;
   player.cleanUp();
 }
@@ -59,7 +68,11 @@ watch(
       resetPlayerAndMapFeatures();
       const selectedActivity = activitiesStore.activities?.find(activity => activity.date === String(route.params.date));
       if (selectedActivity) {
+        notFoundError.value = null;
         activitiesStore.selectedActivity = selectedActivity;
+      }
+      else {
+        notFoundError.value = "No activity found for the selected date.";
       }
     }
   },
@@ -156,8 +169,8 @@ watch(() => player.currentValue.value, () => {
       </template>
     </AppHeader>
 
-    <div class="flex flex-row flex-1 overflow-hidden">
-      <div class="w-64 overflow-y-scroll ">
+    <div class="flex flex-col lg:flex-row flex-1 lg:overflow-hidden">
+      <div class="w-full lg:w-64 overflow-x-scroll lg:overflow-y-scroll  ">
         <ActivitiesList :is-enabled="!loading" />
       </div>
       <div class="flex flex-col flex-1">
@@ -169,21 +182,20 @@ watch(() => player.currentValue.value, () => {
         />
 
         <div
-          v-if="error"
+          v-if="error || notFoundError"
           class="flex flex-col-reverse md:flex-row"
         >
           <DisplayMessage
-            v-if="error"
             title="Error"
-            :description="`Error loading data: ${error}`"
+            :description="`Error loading data: ${error ?? notFoundError}`"
             icon="tabler:alert-triangle"
           />
         </div>
         <div
-          v-if="!error"
+          v-else
           class="flex flex-col-reverse md:flex-row"
         >
-          <Legend :legend-items :is-loading="loading" />
+          <Legend :legend-items="legendItems" :is-loading="loading" />
           <div class="flex-1">
             <Player
               :is-playing="player.isPlaying.value"

@@ -13,7 +13,7 @@ const activitiesStore = useActivitiesStore();
     <h2 class="text-2xl p-4">
       Activities
     </h2>
-    <div class="flex flex-col gap-3 p-4">
+    <div class="flex flex-row lg:flex-col gap-3 p-4">
       <RouterLink
         v-for="activity in activitiesStore.activities"
         :key="activity.date"
