@@ -9,7 +9,7 @@ import env from "../utils/env";
 
 const TRACTOR_API_ENDPOINT = env.VITE_TRACTOR_API_URL;
 
-function checkResponse(response: Response) {
+export function checkResponse(response: Response) {
   if (!response.ok) {
     throw new Error(
       `${response.status} ${response.statusText ?? "Internal server error"}`,
