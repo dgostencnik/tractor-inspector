@@ -6,3 +6,5 @@ export const activityRoutes = express.Router();
 
 // GET /activities
 activityRoutes.get("/", activitiyController.getActivities);
+
+activityRoutes.get("/:date", activitiyController.getActivityTracks);
