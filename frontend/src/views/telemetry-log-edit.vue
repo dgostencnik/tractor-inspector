@@ -8,6 +8,7 @@ import type { TractorTelemetryItem } from "../types";
 import { tractorsApi } from "../api/tractors";
 import AppHeader from "../components/app-header.vue";
 import DisplayMessage from "../components/display-message.vue";
+import SimpleLoader from "../components/simple-loader.vue";
 import TelemetryLogForm from "../components/telemetry-log-form.vue";
 import { useFetch } from "../composables/use-fetch";
 import { EditTelemetryLogItemSchema } from "../schemas/telemetry-log-item";
@@ -58,16 +59,17 @@ async function submit(v: EditTelemetryLogItem) {
     </template>
   </AppHeader>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h flex-1 w-full">
+  <main class="flex flex-col max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h flex-1 w-full">
+    <SimpleLoader v-if="loading" class="flex-1" />
     <DisplayMessage
-      v-if="error"
+      v-if="error && !loading"
       title="Error"
       :description="`Error loading data: ${error}`"
       icon="tabler:alert-triangle"
     >
       <div class="flex gap-2 justify-center">
-        <RouterLink to="/" class="btn btn-success">
-          Back Home
+        <RouterLink :to="`/tractors/${route.params.id}`" class="btn btn-success">
+          Back
         </RouterLink>
       </div>
     </DisplayMessage>
@@ -78,8 +80,8 @@ async function submit(v: EditTelemetryLogItem) {
       description="No record is matching provided criteria. Please verify the inputs and try again."
       icon="tabler:search"
     >
-      <RouterLink to="/" class="btn btn-success">
-        Back Home
+      <RouterLink :to="`/tractors/${route.params.id}`" class="btn btn-success">
+        Back
       </RouterLink>
     </DisplayMessage>
 

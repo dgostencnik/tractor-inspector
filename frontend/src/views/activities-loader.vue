@@ -4,6 +4,7 @@ import { useRouter } from "vue-router";
 
 import AppHeader from "../components/app-header.vue";
 import DisplayMessage from "../components/display-message.vue";
+import SimpleLoader from "../components/simple-loader.vue";
 import { useActivitiesStore } from "../stores/activities-store";
 
 const activitiesStore = useActivitiesStore();
@@ -43,12 +44,7 @@ watch(
 
     <!-- Main content area below header -->
     <div class="flex  flex-1 overflow-hidden justify-center items-center gap-2">
-      <div v-if="activitiesStore.loadingActivities" class="flex flex-col justify-center items-center gap-2">
-        <span
-          class="loading loading-spinner loading-xl"
-        />
-        <p>Loading</p>
-      </div>
+      <SimpleLoader v-if="activitiesStore.loadingActivities" />
       <DisplayMessage
         v-if="!activitiesStore.loadingActivities && activitiesStore.errorActivities"
         title="Error"

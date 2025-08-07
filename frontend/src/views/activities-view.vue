@@ -38,8 +38,6 @@ const activitiesTracksUrl = computed(() => {
   return undefined;
 });
 
-const notFoundError = ref<string | null>(null);
-
 onMounted(() => {
   if (!activitiesStore.activities) {
     activitiesStore.fetchActivities();
@@ -66,13 +64,9 @@ watch(
   async (newParams, oldParams) => {
     if (newParams.date !== oldParams?.date) {
       resetPlayerAndMapFeatures();
-      const selectedActivity = activitiesStore.activities?.find(activity => activity.date === String(route.params.date));
+      const selectedActivity = activitiesStore.activities?.find(activity => activity.date === newParams.date);
       if (selectedActivity) {
-        notFoundError.value = null;
         activitiesStore.selectedActivity = selectedActivity;
-      }
-      else {
-        notFoundError.value = "No activity found for the selected date.";
       }
     }
   },
@@ -182,12 +176,12 @@ watch(() => player.currentValue.value, () => {
         />
 
         <div
-          v-if="error || notFoundError"
+          v-if="error"
           class="flex flex-col-reverse md:flex-row"
         >
           <DisplayMessage
             title="Error"
-            :description="`Error loading data: ${error ?? notFoundError}`"
+            :description="`Error loading data: ${error}`"
             icon="tabler:alert-triangle"
           />
         </div>
