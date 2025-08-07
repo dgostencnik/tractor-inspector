@@ -3,6 +3,8 @@ import { RouterLink } from "vue-router";
 
 import { useActivitiesStore } from "../../stores/activities-store";
 
+defineProps<{ isEnabled?: boolean }>();
+
 const activitiesStore = useActivitiesStore();
 </script>
 
@@ -18,6 +20,9 @@ const activitiesStore = useActivitiesStore();
         :to="`/activities/${activity.date}`"
         class="w-full hover:scale-[1.01] transition-transform"
         :class="{ 'border-2 border-primary rounded': activity.date === activitiesStore.selectedActivity?.date }"
+        :style="{
+          pointerEvents: isEnabled && !activitiesStore.loadingActivities ? '' : 'none',
+        }"
       >
         <div class="card bg-base-100 shadow-md hover:shadow-lg transition-shadow">
           <div class="card-body">

@@ -11,3 +11,20 @@ export function getCenter(points: { lat: number; lng: number }[]): [number, numb
 
   return center;
 }
+
+export function getRandomColor(): string {
+  const r = Math.floor(Math.random() * 256);
+  const g = Math.floor(Math.random() * 256);
+  const b = Math.floor(Math.random() * 256);
+  return `#${[r, g, b].map(x => x.toString(16).padStart(2, "0")).join("")}`;
+}
+
+const knownFeatures: Record<string, string> = {
+  A2302895: "red",
+  A2302900: "green",
+  A6002059: "blue",
+};
+
+export function getColorForFeature(serialNumber: string) {
+  return knownFeatures[serialNumber] ?? getRandomColor();
+}

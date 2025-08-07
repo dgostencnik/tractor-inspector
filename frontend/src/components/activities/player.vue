@@ -1,14 +1,14 @@
 <script lang="ts" setup>
 import { Icon } from "@iconify/vue";
-import { ref } from "vue";
 
 const props = defineProps<{
   isPlaying: boolean;
   speed: number;
   minTime: number;
   maxTime: number;
-  currentTime: number;
+  currentTime?: number;
   isEnabled: boolean;
+  isLoading?: boolean;
   titleFormatter: (val: string | number) => string;
 }>();
 
@@ -20,7 +20,6 @@ const emit = defineEmits<{
   onSeek: [time: number];
 }>();
 
-const playbackSpeed = ref(props.speed);
 const speeds = [1, 2, 4, 8];
 
 function togglePlay() {
@@ -37,7 +36,6 @@ function handleStop() {
 }
 
 function handleSpeedChange(speed: number) {
-  playbackSpeed.value = speed;
   emit("onSpeedChange", speed);
 }
 
@@ -56,15 +54,16 @@ function handleSeek(event: Event) {
           <div class="mb-4">
             <div class="text-center mb-2">
               <span class="text-md font-semibold">
-                {{ titleFormatter(currentTime) }}
+                {{ currentTime ? titleFormatter(currentTime) : '' }}
               </span>
             </div>
             <input
-              :value="currentTime"
+              :key="`${minTime}-${maxTime}`"
+              :value="currentTime ?? minTime"
               type="range"
               :min="minTime"
               :max="maxTime"
-              :disabled="!isEnabled"
+              :disabled="!isEnabled || isLoading"
               class="range range-primary range-sm w-full"
               @input="handleSeek"
             >
@@ -74,26 +73,31 @@ function handleSeek(event: Event) {
             <div class="flex items-center gap-2">
               <button
                 class="btn btn-primary btn-sm min-w-22"
-                :disabled="!isEnabled"
+                :disabled="!isEnabled || isLoading"
                 @click="togglePlay"
               >
+                <span
+                  v-if="isLoading"
+                  class="loading loading-spinner loading-xs"
+                />
+
                 <Icon
-                  v-if="!isPlaying"
+                  v-else-if="!isPlaying"
                   icon="tabler:player-play-filled"
                   class="w-4 h-4"
                 />
 
                 <Icon
-                  v-if="isPlaying"
+                  v-else-if="isPlaying"
                   icon="tabler:player-pause-filled"
                   class="w-4 h-4"
                 />
-                {{ isPlaying ? 'Pause' : 'Start' }}
+                {{ isLoading ? '' : (isPlaying ? 'Pause' : 'Start') }}
               </button>
 
               <button
                 class="btn btn-ghost btn-sm min-w-22"
-                :disabled="!isEnabled"
+                :disabled="!isEnabled || isLoading"
                 @click="handleStop"
               >
                 <Icon
@@ -110,11 +114,11 @@ function handleSeek(event: Event) {
                 <button
                   v-for="spd in speeds"
                   :key="spd"
-                  :disabled="!isEnabled"
+                  :disabled="!isEnabled || isLoading"
                   class="btn btn-xs"
                   :class="{
-                    'btn-primary': playbackSpeed === spd,
-                    'btn-ghost': playbackSpeed !== spd,
+                    'btn-primary': speed === spd,
+                    'btn-ghost': speed !== spd,
                   }"
                   @click="handleSpeedChange(spd)"
                 >

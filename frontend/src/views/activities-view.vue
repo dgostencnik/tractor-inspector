@@ -7,15 +7,17 @@ import type { ActivityLogRecord } from "../types";
 
 import { activitiesApi } from "../api/activities";
 import ActivitiesList from "../components/activities/activities-list.vue";
+import Legend from "../components/activities/legend.vue";
 import MapComponent from "../components/activities/map-component.vue";
 import Player from "../components/activities/player.vue";
 import AppHeader from "../components/app-header.vue";
+import DisplayMessage from "../components/display-message.vue";
 import { useFetch } from "../composables/use-fetch";
 import { usePlayer } from "../composables/use-player";
 import { useActivitiesStore } from "../stores/activities-store";
 import env from "../utils/env";
 import { formatISO8601Time } from "../utils/formatters";
-import { getCenter } from "../utils/map";
+import { getCenter, getColorForFeature } from "../utils/map";
 
 const route = useRoute();
 
@@ -24,16 +26,12 @@ const activitiesTracksUrl = computed(() => String(route.params.date) ? `${env.VI
 const activitiesStore = useActivitiesStore();
 const player = usePlayer({ step: 1000 * 20 });
 
-const { data, refetchData } = useFetch<Map<string, ActivityLogRecord>, [string[], string]>(activitiesApi.getActivityLogsForTractors);
+const { data, refetchData, loading, error } = useFetch<Map<string, ActivityLogRecord>, [string[], string]>(activitiesApi.getActivityLogsForTractors);
 
 const features = ref<{ serialNumber: string; color: string; coordinate: [number, number] }[]>([]);
-const mapCenter = ref(fromLonLat([20, 46]));
 
-const colors: Record<string, string> = {
-  A2302895: "red",
-  A2302900: "green",
-  A6002059: "blue",
-};
+const legendItems = computed(() => features.value.map(f => ({ id: f.serialNumber, title: f.serialNumber, color: f.color })));
+const mapCenter = ref(fromLonLat([20, 46]));
 
 onMounted(() => {
   if (!activitiesStore.activities) {
@@ -48,13 +46,17 @@ onUnmounted(() => {
   player.cleanUp();
 });
 
+function resetPlayerAndMapFeatures() {
+  features.value = [];
+  player.isEnabled.value = false;
+  player.cleanUp();
+}
+
 watch(
   () => route.params,
   async (newParams, oldParams) => {
     if (newParams.date !== oldParams?.date) {
-      features.value = [];
-      player.isEnabled.value = false;
-      player.cleanUp();
+      resetPlayerAndMapFeatures();
       const selectedActivity = activitiesStore.activities?.find(activity => activity.date === String(route.params.date));
       if (selectedActivity) {
         activitiesStore.selectedActivity = selectedActivity;
@@ -67,9 +69,7 @@ watch(
 watch(
   () => activitiesStore.selectedActivity,
   async (newSelectedActivity, oldSelectedActivity) => {
-    features.value = [];
-    player.isEnabled.value = false;
-
+    resetPlayerAndMapFeatures();
     if (newSelectedActivity && newSelectedActivity?.date !== oldSelectedActivity?.date) {
       refetchData(newSelectedActivity.serialNumbers, newSelectedActivity.date);
     }
@@ -82,9 +82,7 @@ watch(
   () => activitiesStore.activities,
   async (newActivities, oldActivities) => {
     if (!!newActivities?.length && !oldActivities?.length) {
-      features.value = [];
-      player.isEnabled.value = false;
-
+      resetPlayerAndMapFeatures();
       const selectedActivity = newActivities?.find(activity => activity.date === String(route.params.date));
       if (selectedActivity) {
         activitiesStore.selectedActivity = selectedActivity;
@@ -99,7 +97,7 @@ watch(() => data.value, () => {
   const initialFeatures: { serialNumber: string; color: string; coordinate: [number, number] }[] = [];
   if (data.value) {
     for (const [key, value] of data.value) {
-      initialFeatures.push({ serialNumber: key, color: colors[key] || "black", coordinate: [value.points[0].lng, value.points[0].lat] });
+      initialFeatures.push({ serialNumber: key, color: getColorForFeature(key), coordinate: [value.points[0].lng, value.points[0].lat] });
     }
     features.value = initialFeatures;
 
@@ -145,7 +143,6 @@ watch(() => player.currentValue.value, () => {
 
 <template>
   <div class="fixed inset-0 flex flex-col bg-base-100">
-    <!-- Header -->
     <AppHeader back-to="/" icon="tabler:tractor">
       <template #title>
         <div>
@@ -161,7 +158,7 @@ watch(() => player.currentValue.value, () => {
 
     <div class="flex flex-row flex-1 overflow-hidden">
       <div class="w-64 overflow-y-scroll ">
-        <ActivitiesList />
+        <ActivitiesList :is-enabled="!loading" />
       </div>
       <div class="flex flex-col flex-1">
         <MapComponent
@@ -170,20 +167,41 @@ watch(() => player.currentValue.value, () => {
           :features
           :center="mapCenter"
         />
-        <Player
-          :is-playing="player.isPlaying.value"
-          :speed="player.speed.value"
-          :min-time="player.minValue.value"
-          :max-time="player.maxValue.value"
-          :current-time="player.currentValue.value"
-          :is-enabled="player.isEnabled.value"
-          :title-formatter="formatISO8601Time"
-          @on-pause="player.onPause"
-          @on-stop="player.onStop"
-          @on-play="player.onPlay"
-          @on-seek="player.onSeek"
-          @on-speed-change="player.onSpeedChange"
-        />
+
+        <div
+          v-if="error"
+          class="flex flex-col-reverse md:flex-row"
+        >
+          <DisplayMessage
+            v-if="error"
+            title="Error"
+            :description="`Error loading data: ${error}`"
+            icon="tabler:alert-triangle"
+          />
+        </div>
+        <div
+          v-if="!error"
+          class="flex flex-col-reverse md:flex-row"
+        >
+          <Legend :legend-items :is-loading="loading" />
+          <div class="flex-1">
+            <Player
+              :is-playing="player.isPlaying.value"
+              :speed="player.speed.value"
+              :min-time="player.minValue.value"
+              :max-time="player.maxValue.value"
+              :current-time="player.currentValue.value"
+              :is-enabled="player.isEnabled.value && !loading"
+              :is-loading="loading"
+              :title-formatter="formatISO8601Time"
+              @on-pause="player.onPause"
+              @on-stop="player.onStop"
+              @on-play="player.onPlay"
+              @on-seek="player.onSeek"
+              @on-speed-change="player.onSpeedChange"
+            />
+          </div>
+        </div>
       </div>
     </div>
   </div>

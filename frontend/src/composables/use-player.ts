@@ -55,7 +55,7 @@ export function usePlayer(options: PlayerOptions) {
     }
     isPlaying.value = false;
     clearInterval(intervalId.value);
-    currentValue.value = 0;
+    currentValue.value = minValue.value;
   }
 
   function onSpeedChange(newSpeed: number) {
@@ -64,7 +64,9 @@ export function usePlayer(options: PlayerOptions) {
     }
     clearInterval(intervalId.value);
     speed.value = newSpeed;
-    onPlay();
+    if (isPlaying.value) {
+      onPlay();
+    }
   }
 
   function onSeek(newTime: number) {
