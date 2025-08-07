@@ -119,3 +119,5 @@ BEGIN
 
     
 END $$;
+
+drop table if exists temp_vehicle_sessions;
