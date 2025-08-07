@@ -1,32 +1,60 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { fromLonLat } from "ol/proj";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
+import type { ActivityLogRecord } from "../types";
+
+import { activitiesApi } from "../api/activities";
 import ActivitiesList from "../components/activities/activities-list.vue";
 import MapComponent from "../components/activities/map-component.vue";
 import Player from "../components/activities/player.vue";
 import AppHeader from "../components/app-header.vue";
+import { useFetch } from "../composables/use-fetch";
 import { usePlayer } from "../composables/use-player";
 import { useActivitiesStore } from "../stores/activities-store";
 import env from "../utils/env";
+import { formatISO8601Time } from "../utils/formatters";
+import { getCenter } from "../utils/map";
 
 const route = useRoute();
 
-const serviceUrl = computed(() => String(route.params.date) ? `${env.VITE_TRACTOR_API_URL}/activities/${route.params.date}` : undefined);
+const activitiesTracksUrl = computed(() => String(route.params.date) ? `${env.VITE_TRACTOR_API_URL}/activities/${route.params.date}` : undefined);
 
 const activitiesStore = useActivitiesStore();
-const player = usePlayer(2);
+const player = usePlayer({ step: 1000 * 20 });
+
+const { data, refetchData } = useFetch<Map<string, ActivityLogRecord>, [string[], string]>(activitiesApi.getActivityLogsForTractors);
+
+const features = ref<{ serialNumber: string; color: string; coordinate: [number, number] }[]>([]);
+const mapCenter = ref(fromLonLat([20, 46]));
+
+const colors: Record<string, string> = {
+  A2302895: "red",
+  A2302900: "green",
+  A6002059: "blue",
+};
 
 onMounted(() => {
   if (!activitiesStore.activities) {
     activitiesStore.fetchActivities();
   }
+  if (activitiesStore.selectedActivity) {
+    refetchData(activitiesStore.selectedActivity.serialNumbers, activitiesStore.selectedActivity.date);
+  }
+});
+
+onUnmounted(() => {
+  player.cleanUp();
 });
 
 watch(
   () => route.params,
   async (newParams, oldParams) => {
     if (newParams.date !== oldParams?.date) {
+      features.value = [];
+      player.isEnabled.value = false;
+      player.cleanUp();
       const selectedActivity = activitiesStore.activities?.find(activity => activity.date === String(route.params.date));
       if (selectedActivity) {
         activitiesStore.selectedActivity = selectedActivity;
@@ -37,9 +65,26 @@ watch(
 );
 
 watch(
+  () => activitiesStore.selectedActivity,
+  async (newSelectedActivity, oldSelectedActivity) => {
+    features.value = [];
+    player.isEnabled.value = false;
+
+    if (newSelectedActivity && newSelectedActivity?.date !== oldSelectedActivity?.date) {
+      refetchData(newSelectedActivity.serialNumbers, newSelectedActivity.date);
+    }
+  },
+
+  { immediate: true },
+);
+
+watch(
   () => activitiesStore.activities,
   async (newActivities, oldActivities) => {
     if (!!newActivities?.length && !oldActivities?.length) {
+      features.value = [];
+      player.isEnabled.value = false;
+
       const selectedActivity = newActivities?.find(activity => activity.date === String(route.params.date));
       if (selectedActivity) {
         activitiesStore.selectedActivity = selectedActivity;
@@ -48,6 +93,54 @@ watch(
   },
   { immediate: true },
 );
+
+watch(() => data.value, () => {
+  // initialize features
+  const initialFeatures: { serialNumber: string; color: string; coordinate: [number, number] }[] = [];
+  if (data.value) {
+    for (const [key, value] of data.value) {
+      initialFeatures.push({ serialNumber: key, color: colors[key] || "black", coordinate: [value.points[0].lng, value.points[0].lat] });
+    }
+    features.value = initialFeatures;
+
+    const center = getCenter(initialFeatures.map(f => ({ lat: f.coordinate[0], lng: f.coordinate[1] })));
+
+    mapCenter.value = fromLonLat(center);
+  }
+
+  // initialize player
+  let min = Number.POSITIVE_INFINITY;
+  let max = Number.NEGATIVE_INFINITY;
+  if (data.value) {
+    for (const value of data.value.values()) {
+      if (value.min < min) {
+        min = value.min;
+      }
+      if (value.max > max) {
+        max = value.max;
+      }
+    }
+  }
+  player.initialize({ speed: 1, minValue: min, maxValue: max });
+});
+
+watch(() => player.currentValue.value, () => {
+  if (data.value) {
+    const newLocations = new Map<string, [number, number]>();
+    for (const [key, value] of data.value) {
+      if (!value.points)
+        return;
+
+      for (let i = 0; i < value.points.length; i++) {
+        if (new Date(value.points[i].date).getTime() > player.currentValue.value) {
+          newLocations.set(key, [value.points[i].lng, value.points[i].lat]);
+          break;
+        }
+      }
+    }
+    features.value = features.value?.map(f => ({ ...f, coordinate: newLocations.get(f.serialNumber) ?? [0, 0] }));
+  }
+});
 </script>
 
 <template>
@@ -59,27 +152,32 @@ watch(
           <h1 class="text-xl font-bold">
             Fleet map
           </h1>
+          <p>
+            {{ activitiesStore.selectedActivity ? new Date(activitiesStore.selectedActivity.date).toLocaleDateString() : '' }}
+          </p>
         </div>
       </template>
     </AppHeader>
 
-    <!-- Main content area below header -->
     <div class="flex flex-row flex-1 overflow-hidden">
       <div class="w-64 overflow-y-scroll ">
         <ActivitiesList />
       </div>
-      <!-- Map component (fills remaining space) -->
       <div class="flex flex-col flex-1">
         <MapComponent
           class="w-full h-full p-4 bg-base-200"
-          :url="serviceUrl"
+          :overlay-layer-url="activitiesTracksUrl"
+          :features
+          :center="mapCenter"
         />
         <Player
           :is-playing="player.isPlaying.value"
           :speed="player.speed.value"
-          :min-time="0"
-          :max-time="100"
+          :min-time="player.minValue.value"
+          :max-time="player.maxValue.value"
           :current-time="player.currentValue.value"
+          :is-enabled="player.isEnabled.value"
+          :title-formatter="formatISO8601Time"
           @on-pause="player.onPause"
           @on-stop="player.onStop"
           @on-play="player.onPlay"
