@@ -17,7 +17,7 @@ const activitiesStore = useActivitiesStore();
         :key="activity.date"
         :to="`/activities/${activity.date}`"
         class="w-full hover:scale-[1.01] transition-transform"
-        :class="{ 'border-2 border-primary': activity.date === activitiesStore.selectedActivity?.date }"
+        :class="{ 'border-2 border-primary rounded': activity.date === activitiesStore.selectedActivity?.date }"
       >
         <div class="card bg-base-100 shadow-md hover:shadow-lg transition-shadow">
           <div class="card-body">

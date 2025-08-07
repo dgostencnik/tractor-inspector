@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import ActivitiesList from "../components/activities/activities-list.vue";
 import MapComponent from "../components/activities/map-component.vue";
+import Player from "../components/activities/player.vue";
 import AppHeader from "../components/app-header.vue";
+import { usePlayer } from "../composables/use-player";
 import { useActivitiesStore } from "../stores/activities-store";
 import env from "../utils/env";
 
@@ -13,6 +15,8 @@ const route = useRoute();
 const serviceUrl = computed(() => String(route.params.date) ? `${env.VITE_TRACTOR_API_URL}/activities/${route.params.date}` : undefined);
 
 const activitiesStore = useActivitiesStore();
+const player = usePlayer(2);
+
 onMounted(() => {
   if (!activitiesStore.activities) {
     activitiesStore.fetchActivities();
@@ -65,10 +69,22 @@ watch(
         <ActivitiesList />
       </div>
       <!-- Map component (fills remaining space) -->
-      <div class="flex-1">
+      <div class="flex flex-col flex-1">
         <MapComponent
-          class="w-full h-full"
+          class="w-full h-full p-4 bg-base-200"
           :url="serviceUrl"
+        />
+        <Player
+          :is-playing="player.isPlaying.value"
+          :speed="player.speed.value"
+          :min-time="0"
+          :max-time="100"
+          :current-time="player.currentValue.value"
+          @on-pause="player.onPause"
+          @on-stop="player.onStop"
+          @on-play="player.onPlay"
+          @on-seek="player.onSeek"
+          @on-speed-change="player.onSpeedChange"
         />
       </div>
     </div>
