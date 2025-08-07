@@ -8,6 +8,8 @@ const props = defineProps<{
   minTime: number;
   maxTime: number;
   currentTime: number;
+  isEnabled: boolean;
+  titleFormatter: (val: string | number) => string;
 }>();
 
 const emit = defineEmits<{
@@ -54,7 +56,7 @@ function handleSeek(event: Event) {
           <div class="mb-4">
             <div class="text-center mb-2">
               <span class="text-md font-semibold">
-                {{ new Date(currentTime).toISOString() }}
+                {{ titleFormatter(currentTime) }}
               </span>
             </div>
             <input
@@ -62,6 +64,7 @@ function handleSeek(event: Event) {
               type="range"
               :min="minTime"
               :max="maxTime"
+              :disabled="!isEnabled"
               class="range range-primary range-sm w-full"
               @input="handleSeek"
             >
@@ -71,6 +74,7 @@ function handleSeek(event: Event) {
             <div class="flex items-center gap-2">
               <button
                 class="btn btn-primary btn-sm min-w-22"
+                :disabled="!isEnabled"
                 @click="togglePlay"
               >
                 <Icon
@@ -89,6 +93,7 @@ function handleSeek(event: Event) {
 
               <button
                 class="btn btn-ghost btn-sm min-w-22"
+                :disabled="!isEnabled"
                 @click="handleStop"
               >
                 <Icon
@@ -105,6 +110,7 @@ function handleSeek(event: Event) {
                 <button
                   v-for="spd in speeds"
                   :key="spd"
+                  :disabled="!isEnabled"
                   class="btn btn-xs"
                   :class="{
                     'btn-primary': playbackSpeed === spd,

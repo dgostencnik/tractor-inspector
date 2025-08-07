@@ -60,3 +60,16 @@ export function formatISO8601Date(isoDateString?: unknown) {
     timeZone: "UTC",
   });
 }
+
+export function formatISO8601Time(isoDateString?: string | number) {
+  if (!isoDateString) {
+    return "Invalid date";
+  }
+
+  const date = new Date(isoDateString);
+  if (Number.isNaN(date.getTime())) {
+    return "Invalid date";
+  }
+
+  return date.toISOString().split("T")[1].slice(0, 8);
+}
