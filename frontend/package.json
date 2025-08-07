@@ -14,9 +14,13 @@
   },
   "dependencies": {
     "@vee-validate/zod": "^4.15.1",
+    "ol": "^10.6.1",
+    "ol-contextmenu": "^5.5.0",
+    "ol-ext": "^4.0.33",
     "vee-validate": "^4.15.1",
     "vue": "^3.5.17",
     "vue-router": "^4.5.1",
+    "vue3-openlayers": "^11.6.2",
     "zod": "^4.0.14"
   },
   "devDependencies": {

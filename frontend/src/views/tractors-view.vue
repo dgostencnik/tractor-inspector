@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Icon } from "@iconify/vue";
 import { computed, onMounted, ref } from "vue";
+import { RouterLink } from "vue-router";
 
 import type { Tractor } from "../types";
 
@@ -33,9 +34,18 @@ onMounted(() => {
 <template>
   <AppHeader icon="tabler:tractor">
     <template #title>
-      <h1 class="text-2xl font-bold">
-        Tractor Inspector
-      </h1>
+      <div class="flex gap-4 items-center">
+        <h1 class="text-2xl font-bold">
+          Tractor Inspector
+        </h1>
+        <RouterLink
+          class="btn btn-primary"
+          to="/map"
+        >
+          <Icon icon="tabler:map" />
+          <span>Fleet Map</span>
+        </RouterLink>
+      </div>
     </template>
   </AppHeader>
 
