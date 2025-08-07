@@ -1,5 +1,6 @@
 import type {
   Activity,
+  ActivityLogRecord,
   ActivityTrackCollection,
 } from "../types";
 
@@ -26,7 +27,26 @@ async function getActivityTracks(date: string) {
   return data;
 }
 
+async function getActivityLogsForTractors(serialNumbers: string[], date: string) {
+  const promises = serialNumbers.map(serialNumber => fetch(`${API_ENDPOINT}/activities/${date}/${serialNumber}`).then(res => res.json()));
+
+  const responses = await Promise.all(promises);
+
+  const result = new Map<string, ActivityLogRecord>();
+
+  responses.forEach((response, index) => {
+    result.set(serialNumbers[index], {
+      points: response,
+      min: new Date(response[0].date).getTime(),
+      max: new Date(response[response.length - 1].date).getTime(),
+    });
+  });
+
+  return result;
+}
+
 export const activitiesApi = {
   getActivities,
   getActivityTracks,
+  getActivityLogsForTractors,
 };

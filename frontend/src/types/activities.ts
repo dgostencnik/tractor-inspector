@@ -12,3 +12,16 @@ export type ActivityTrackFeature = Feature<LineString, {
 export type ActivityTrackCollection = FeatureCollection<LineString, {
   serialNumber: string;
 }>;
+
+export type ActivityLogPoint = {
+  id: number;
+  date: string;
+  lat: number;
+  lng: number;
+};
+
+export type ActivityLogRecord = {
+  min: number;
+  max: number;
+  points: ActivityLogPoint[];
+};

@@ -54,7 +54,7 @@ function handleSeek(event: Event) {
           <div class="mb-4">
             <div class="text-center mb-2">
               <span class="text-md font-semibold">
-                {{ currentTime }}
+                {{ new Date(currentTime).toISOString() }}
               </span>
             </div>
             <input

@@ -1,7 +1,7 @@
 import { query } from "../db.js";
 import { convertToGeoJSONLineString, simplifyPoints } from "../lib/utils.js";
 
-const getActivities = async (req, res) => {
+async function getActivities(req, res) {
   try {
     const result = await query(
       `SELECT 
@@ -19,11 +19,10 @@ const getActivities = async (req, res) => {
   }
 };
 
-
-const getActivityTracks = async (req, res) => {
+async function getActivityTracks(req, res) {
   try {
     const { date } = req.params;
-    const parsedDate = new Date(date).toISOString().split('T')[0]; // "2020-03-14"
+    const parsedDate = new Date(date).toISOString().split('T')[0];
 
 
     const result = await query(
@@ -39,7 +38,7 @@ const getActivityTracks = async (req, res) => {
        WHERE DATE(date_time) = $1 
        GROUP BY serial_number
        ORDER BY serial_number;`,
-      [date]
+      [parsedDate]
     );
 
     if (result.rows.length === 0) {
@@ -75,10 +74,45 @@ const getActivityTracks = async (req, res) => {
   }
 };
 
+async function getActivityLogForTractor(req, res) {
+  try {
+    const { date, serialNumber } = req.params;
+    const parsedDate = new Date(date).toISOString().split('T')[0];
+
+    // Query the database for sessions matching the provided date and serial number
+    const result = await query(
+      `SELECT 
+        id,
+        date_time as date,
+        gps_latitude as lat,
+        gps_longitude as lng 
+       FROM 
+        vehicle_sessions
+       WHERE serial_number = $1 
+       AND DATE(date_time) = $2
+       ORDER BY date_time;`,
+      [serialNumber, parsedDate]
+    );
+
+    // If no data is found, return a 404 error
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "No data found" });
+    }
+
+    // Return the resulting rows as JSON
+    return res.json(result.rows);
+  } catch (error) {
+    // Log any errors and return a 500 error response
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: "Failed to retrieve data" });
+  }
+};
+
 
 
 
 export const activitiyController = {
   getActivities,
-  getActivityTracks
+  getActivityTracks,
+  getActivityLogForTractor
 };
