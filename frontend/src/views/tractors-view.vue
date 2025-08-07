@@ -40,7 +40,7 @@ onMounted(() => {
         </h1>
         <RouterLink
           class="btn btn-primary"
-          to="/map"
+          to="/activities"
         >
           <Icon icon="tabler:map" />
           <span>Fleet Map</span>
