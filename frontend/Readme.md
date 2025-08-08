@@ -6,6 +6,12 @@ The frontend is included in the Docker Compose file located in the project's roo
 docker compose up -d
 ```
 
+Once running, the application can be accessed at:
+
+```
+http://localhost:5173
+```
+
 ### Running the Frontend Separately
 
 If needed, the frontend can also be run independently using the following commands:
@@ -13,6 +19,12 @@ If needed, the frontend can also be run independently using the following comman
 ```
 pnpm install
 pnpm dev
+```
+
+Once running, the application can be accessed at:
+
+```
+http://localhost:5173
 ```
 
 Before running `pnpm dev`, ensure the `VITE_TRACTOR_API_URL` environment variable is set to the backend container URL. For example:
